@@ -20,8 +20,8 @@ aligned_*.npy
 pet.npy
 *.npy
 *.npz
-*.nii
-*.nii.gz
+# *.nii
+# *.nii.gz
 *.mha
 *.mhd
 *.raw
