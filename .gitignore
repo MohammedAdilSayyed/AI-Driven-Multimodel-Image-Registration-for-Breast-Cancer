@@ -1,0 +1,56 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+.venv/
+venv/
+.env
+
+# OS/editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Data & artifacts
+# Keep small samples via ! if needed
+aligned_*.npy
+pet.npy
+*.npy
+*.npz
+*.nii
+*.nii.gz
+*.mha
+*.mhd
+*.raw
+*.hdr
+
+# Trained models and logs
+trained_model/
+logs/
+checkpoints/
+
+# Plots and figures
+*.png
+*.jpg
+*.jpeg
+*.tiff
+*.pdf
+
+# Notebooks
+*.ipynb_checkpoints/
+
+# Build
+build/
+dist/
+.eggs/
+
+# Misc
+*.tmp
+*.bak
+
+# Allow code/data descriptors
+!data/**/ct.json
+!data/**/pet.json
