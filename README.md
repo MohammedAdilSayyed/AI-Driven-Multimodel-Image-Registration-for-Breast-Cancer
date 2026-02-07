@@ -34,6 +34,27 @@ Key capabilities include **rigid & affine image registration**, **Standardized U
   - 3D volume montages.
   - Publication-quality fusion overlays.
 
+## 📄 Example Outputs
+
+### 1. Automated Analysis Dashboard
+The pipeline generates a comprehensive dashboard for each patient, visualizing the core steps of the analysis:
+
+![Analysis Dashboard](assets/analysis_dashboard.png)
+
+- **Registration Review (Top Row)**: 
+  - **CT (Left)**: Anatomical reference.
+  - **Registered PET (Right)**: Metabolic activity map aligned to the CT coordinate space.
+  - **Fusion (Right)**: Overlay of PET on CT, verifying alignment accuracy.
+- **Quantitative Analysis (Bottom Row)**:
+  - **SUV Map**: Standardized Uptake Value heatmap.
+  - **Tumor Segmentation**: Comparison of **Manual (Green)** vs. **AI-Driven (Cyan)** segmentation contours.
+  - **Metrics Panel**: Instant readout of registration quality (Mutual Information), SUV statistics, and tumor volume.
+
+### 2. 3D Volume Montage
+A multi-slice view across the axial plane allows for rapid assessment of tumor extent and registration consistency throughout the volume.
+
+![3D Montage](assets/3d_montage.png)
+
 ## 🛠️ Technology Stack
 
 - **Core Imaging**: `SimpleITK`, `nibabel`
