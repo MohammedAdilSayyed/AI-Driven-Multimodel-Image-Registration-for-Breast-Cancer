@@ -1,0 +1,36 @@
+{
+  "patient": "patient04",
+  "registration": {
+    "final_metric": -0.30622378811013606,
+    "iterations": 169
+  },
+  "suv": {
+    "suv_max": 5.038039684295654,
+    "suv_mean": 0.07368563860654831,
+    "suv_min": 3.312604530958385e-12,
+    "suv_std": 0.1662590503692627,
+    "suv_median": 0.0020172186195850372,
+    "volume_ml": 107415.16616309267,
+    "total_lesion_glycolysis": 7914.95556640625,
+    "suv_peak": 5.038039684295654
+  },
+  "segmentation": {
+    "method": "percent_max",
+    "parameters": {
+      "percentage": 0.4,
+      "min_threshold": 2.5
+    },
+    "num_lesions": 1,
+    "total_volume_ml": 20.01776464456782,
+    "lesions": [
+      {
+        "volume_ml": 20.01776464456782,
+        "centroid": [
+          51.07259373861416,
+          127.8567922747954,
+          -196.8900252352416
+        ]
+      }
+    ]
+  }
+}

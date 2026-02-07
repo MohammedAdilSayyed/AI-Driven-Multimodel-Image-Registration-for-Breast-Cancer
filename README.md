@@ -1,335 +1,132 @@
-# Multi-Modal Medical Image Registration for Breast CT and PET Images
+# 🎗️ AI Driven Multimodel Image Registration for Breast Cancer
 
-## Project Overview
+![Python](https://img.shields.io/badge/Python-3.8%2B-blue)
+![Medical Imaging](https://img.shields.io/badge/Medical-Imaging-red)
+![AI](https://img.shields.io/badge/AI-Machine%20Learning-green)
+![Status](https://img.shields.io/badge/Status-Active-success)
 
-This project implements a complete pipeline for multi-modal image registration of breast CT and PET images using SimpleITK. The work focuses on aligning CT (Computed Tomography) anatomical images with PET (Positron Emission Tomography) functional images to enable accurate combined visualization for diagnostic applications.
+A comprehensive Python toolkit for the automatic registration, fusion, and AI-driven analysis of multimodal (CT/PET) breast cancer imaging data.
 
-## Technology Stack
+## 📋 Overview
 
-- **SimpleITK**: Core registration engine
-- **NumPy**: Numerical array operations
-- **Matplotlib**: Visualization and plotting
-- **NiBabel**: Medical image I/O
-- **Python 3.x**: Programming language
+This project provides an end-to-end pipeline for processing medical images, specifically designed for breast cancer diagnosis and research. It bridges anatomical data (CT) with metabolic data (PET) to provide precise tumor localization and quantitative analysis.
 
-## Dataset
+Key capabilities include **rigid & affine image registration**, **Standardized Uptake Value (SUV) calculation**, and **Unsupervised AI segmentation** to automatically identify potential lesions.
 
-The project uses a breast imaging dataset containing paired CT and PET volumes from multiple patients:
-- **Modality**: CT (anatomical) and PET (functional) 
-- **Manufacturer**: GE Discovery STE scanner
-- **Imaging Position**: Prone breast position (HFP - Head First Prone)
-- **Format**: NIfTI (.nii.gz) converted from DICOM using dcm2niix
-- **Patients**: 4 patients (patient01-patient04)
-- **Protocol**: 7.3 PRONE BREAST
+## ✨ Key Features
 
-### Dataset Structure
-```
-data/
-└── patients/
-    ├── patient01/
-    │   ├── ct.nii.gz
-    │   ├── ct.json (metadata)
-    │   ├── pet.nii.gz
-    │   └── pet.json (metadata)
-    ├── patient02/
-    └── ...
-```
+- **🔄 Robust Image Registration**
+  - Multi-stage alignment (Center of Mass → Rigid → Affine).
+  - Uses Mutual Information metric for accurate multimodal fusion.
+  - Corrects patient positioning errors and scanner misalignments.
 
-## Core Files Description
+- **🤖 AI-Driven Segmentation**
+  - **Unsupervised K-Means Clustering**: Automatically separates tumor, soft tissue, and background without manual thresholding.
+  - Fuses CT density and PET metabolic activity for superior tissue classification.
 
-### 1. `og.py` - Original Images Visualization
-**Purpose**: Loads and displays unregistered CT and PET images side-by-side for baseline assessment.
+- **📊 Quantitative SUV Analysis**
+  - Calculates **SUVbw** (Body Weight), **SUVlbm** (Lean Body Mass), and **SUVbsa**.
+  - Computes critical metrics: $SUV_{max}$, $SUV_{mean}$, $SUV_{peak}$, and Total Lesion Glycolysis (TLG).
 
-**Key Features**:
-- Uses NiBabel for loading NIfTI volumes
-- Extracts middle slice for 2D visualization
-- Displays CT in grayscale and PET in hot colormap
-- Prints volume dimensions for spatial awareness
+- **🖼️ Advanced Visualization**
+  - Interactive slice navigation.
+  - Multi-planar reconstruction (Axial, Coronal, Sagittal).
+  - 3D volume montages.
+  - Publication-quality fusion overlays.
 
-**Usage**:
-```python
-python og.py
-```
+## 🛠️ Technology Stack
 
-**Output**: Side-by-side comparison of original CT and PET slices showing misalignment before registration.
+- **Core Imaging**: `SimpleITK`, `nibabel`
+- **Data Science**: `numpy`, `scipy`
+- **Machine Learning**: `scikit-learn`
+- **Visualization**: `matplotlib`
 
----
+## 🚀 Installation
 
-### 2. `ogov.py` - Resampled Overlay Visualization
-**Purpose**: Creates overlay visualization of CT-PET by resampling PET to CT spatial geometry.
+1.  **Clone the repository**
+    ```bash
+    git clone https://github.com/yourusername/breast-cancer-registration.git
+    cd breast-cancer-registration
+    ```
 
-**Key Features**:
-- SimpleITK-based resampling using `ResampleImageFilter`
-- Transforms PET to match CT pixel grid (spacing, origin, direction)
-- Linear interpolation for smooth resampling
-- Overlays PET (hot colormap) with CT (grayscale) using alpha blending
-- Normalizes intensity values to [0,1] range
+2.  **Create a virtual environment (Recommended)**
+    ```bash
+    python -m venv venv
+    # Windows
+    venv\Scripts\activate
+    # Linux/Mac
+    source venv/bin/activate
+    ```
 
-**Technical Details**:
-- **Resampling**: Reference image (CT) defines the output geometry
-- **Interpolation**: Linear (preserves edge quality)
-- **Alpha channel**: 0.4 opacity for PET overlay
-- **No geometric transformation**: Only isotropic resampling
+3.  **Install dependencies**
+    ```bash
+    pip install -r requirements.txt
+    ```
 
-**Usage**:
-```python
-python ogov.py
-```
+## 💻 Usage
 
----
+### Automated Pipeline
+Run the full analysis pipeline on a patient dataset. This will perform registration, SUV calculation, AI segmentation, and report generation in one go.
 
-### 3. `ogovint.py` - Interactive Slice Viewer
-**Purpose**: Interactive slider-based viewer for browsing through all slices of the CT-PET overlay.
-
-**Key Features**:
-- Dynamic slice navigation with matplotlib slider widget
-- Real-time slice update as slider moves
-- Pre-normalizes all slices for consistent display
-- Frame-by-frame analysis capability
-- Value range: 0 to (total_slices - 1)
-
-**UI Components**:
-- Main axis: CT-PET overlay display
-- Bottom slider: Slice selection
-- Automatic normalization per slice
-- Dynamic title updates
-
-**Usage**:
-```python
-python ogovint.py
-```
-
-**Interactivity**: Move slider to browse through all axial slices of the registered volume.
-
----
-
-### 4. `reg.py` - Image Registration Pipeline
-**Purpose**: Performs rigid multi-modal image registration using mutual information optimization.
-
-**Algorithm**: Mattes Mutual Information (MMI) with Regular Step Gradient Descent
-
-#### Registration Components
-
-**1. Similarity Metric**
-```python
-MattesMutualInformation(numberOfHistogramBins=50)
-```
-- **Rationale**: Robust for multi-modal (CT-PET) registration
-- **Histogram bins**: 50 for MI calculation
-- **Sampling strategy**: Random (20% of pixels)
-- **Advantage**: Intensity-independent matching
-
-**2. Optimizer**
-```python
-RegularStepGradientDescent(
-    learningRate=2.0,
-    minStep=1e-4,
-    numberOfIterations=200,
-    relaxationFactor=0.5
-)
-```
-- **Type**: Gradient descent with adaptive step size
-- **Learning rate**: 2.0
-- **Convergence**: Minimum step 1e-4
-- **Iterations**: Maximum 200
-- **Relaxation**: 0.5 per iteration
-
-**3. Transform**
-```python
-Euler3DTransform()  # 6 degrees of freedom
-```
-- **Type**: Rigid (rotation + translation)
-- **DOF**: 6 (3 rotations, 3 translations)
-- **Initialization**: Centered transform initializer
-- **Method**: Geometry-based initialization
-
-**4. Interpolator**
-```python
-sitkLinear
-```
-- Smooth interpolation during resampling
-- Balances speed and accuracy
-
-#### Registration Workflow
-
-1. **Image Loading**: Read CT and PET as Float32
-2. **Initialize Transform**: Compute initial rigid transformation from image geometry centers
-3. **Optimize**: Minimize MI metric to find optimal alignment
-4. **Apply Transform**: Resample PET using final transform
-5. **Visualize**: Display registered overlay
-
-**Usage**:
-```python
-python reg.py
-```
-
-**Output**: Registered PET overlaid on CT showing improved alignment.
-
----
-
-## Technical Implementation Details
-
-### Coordinate System Handling
-- **Image orientation**: Both CT and PET have `[-1, 0, 0; 0, -1, 0]` direction matrix
-- **Patient position**: HFP (Head First Prone)
-- **Spatial reference**: SimpleITK handles voxel-to-physical mapping
-
-### Intensity Normalization
-```python
-def normalize(img):
-    return (img - np.min(img)) / (np.max(img) - np.min(img) + 1e-8)
-```
-- Maps intensities to [0,1] range
-- Prevents division by zero with epsilon
-- Enables consistent visualization across modalities
-
-### Resampling Pipeline
-```python
-ResampleImageFilter()
-    → SetReferenceImage(ct_img)
-    → SetInterpolator(sitkLinear)
-    → SetTransform(transform)
-    → Execute(pet_img)
-```
-- Output matches reference image (CT) exactly
-- Linear interpolation for sub-voxel accuracy
-- Transform applied: identity (ogov.py) or optimized (reg.py)
-
----
-
-## Installation
-
-### Prerequisites
 ```bash
-pip install SimpleITK numpy matplotlib nibabel
+python pipeline.py "data/patients/patient01" --weight 70
 ```
 
-### System Requirements
-- Python 3.7+
-- 8GB+ RAM for volumetric processing
-- Windows/Linux/macOS
+**Arguments:**
+- `patient_path`: Path to the patient directory containing `ct.nii.gz` and `pet.nii.gz`.
+- `--weight` / `-w`: Patient weight in kg (required for accurate SUV calculation).
+- `--output` / `-o`: (Optional) Custom output directory.
 
----
+### using Python Modules
+You can import individual modules for custom workflows:
 
-## Usage Workflow
+```python
+from src.registration import ImageRegistration, load_image
+from src.ml_segmentation import MLTumorSegmentor
 
-### Step 1: View Original Unregistered Images
-```bash
-python og.py
+# Load images
+ct = load_image("data/patient01/ct.nii.gz")
+pet = load_image("data/patient01/pet.nii.gz")
+
+# 1. Register
+registrar = ImageRegistration()
+transform = registrar.register(ct, pet, "rigid")
+pet_reg = registrar.apply_transform(ct, pet, transform)
+
+# 2. AI Segmentation
+segmentor = MLTumorSegmentor(n_clusters=3)
+result = segmentor.segment(ct, pet_reg)
+
+print(f"Tumor Cluster ID: {result.tumor_cluster_id}")
 ```
-Analyzes baseline misalignment between CT and PET.
 
-### Step 2: Resampled Overlay
-```bash
-python ogov.py
+## 📂 Project Structure
+
 ```
-Creates overlay by geometric resampling without optimization.
-
-### Step 3: Interactive Inspection
-```bash
-python ogovint.py
+├── 📁 data/                 # Patient datasets
+├── 📁 src/                  # Source code
+│   ├── ml_segmentation.py   # K-Means clustering logic
+│   ├── registration.py      # Rigid/Affine registration
+│   ├── segmentation.py      # Threshold-based segmentation
+│   ├── suv.py               # SUV calculation engine
+│   └── visualization.py     # Plotting utilities
+├── pipeline.py              # Main execution script
+├── requirements.txt         # Dependencies
+└── README.md                # Project documentation
 ```
-Browse through all slices with slider.
 
-### Step 4: Rigid Registration
-```bash
-python reg.py
-```
-Performs full rigid registration with mutual information.
+## 📄 Output & Results
 
----
+The pipeline generates a `output/` folder containing:
+- **`pet_registered.nii.gz`**: PET volume aligned to CT coordinates.
+- **`tumor_mask_ai.nii.gz`**: Binary mask of the AI-detected tumor.
+- **`analysis_report.png`**: Visual dashboard showing fusion and segmentation.
+- **`report.json`**: JSON file with all quantitative metrics (Registration error, SUV stats, Tumor volume).
 
-## Visualization Pipeline
+## 🤝 Contributing
 
-### Colormap Strategy
-- **CT**: `gray` - Shows anatomical structure
-- **PET**: `hot` - Highlights metabolic activity
-- **Overlay**: Alpha blending (alpha=0.4) for simultaneous viewing
+Contributions are welcome! Please feel free to submit a Pull Request.
 
-### Display Optimization
-- **Slice selection**: Middle slice (shape[0] // 2)
-- **Color normalization**: Per slice for dynamic range
-- **Background**: Removed axes for clean medical viewing
+## 📜 License
 
----
-
-## Performance Considerations
-
-### Computational Complexity
-- **Registration**: O(N log N) for MI with 200 iterations
-- **Resampling**: O(N) where N = voxels
-- **Total time**: ~30-60 seconds per patient on CPU
-
-### Memory Usage
-- Float32 precision (efficient for medical volumes)
-- Lazy loading: Images loaded on-demand
-- Peak memory: ~500MB per volume
-
-### Optimization Strategies
-1. **Random sampling**: 20% of voxels for MI (50x speedup)
-2. **Coarse-to-fine**: Multi-resolution (potential extension)
-3. **GPU acceleration**: Optional SimpleITK-SimpleElastix integration
-
----
-
-## Scientific Foundation
-
-### Mutual Information Theory
-Mutual Information measures statistical dependence between two images:
-```
-MI(I1, I2) = H(I1) + H(I2) - H(I1, I2)
-```
-where H is entropy. Maximizing MI aligns similar anatomical structures across modalities.
-
-### Rigid Transform Parameter Space
-6 parameters optimized:
-- **Translations**: tx, ty, tz
-- **Rotations**: θx, θy, θz (Euler angles)
-
-Initialized from geometric image centers for fast convergence.
-
-### Multi-Modal Challenges Addressed
-1. **Intensity mismatch**: MI ignores absolute values
-2. **Contrast differences**: Statistical correlation used
-3. **Noise robustness**: Random sampling reduces sensitivity
-4. **Limited overlap**: Geometry-aware initialization
-
----
-
-## Extensions and Future Work
-
-### Planned Enhancements
-1. **Non-rigid registration**: B-spline deformable transforms
-2. **Deep learning**: VoxelMorph-based unsupervised registration
-3. **Multi-resolution**: Pyramid-based coarse-to-fine approach
-4. **Validation metrics**: Dice coefficient, Hausdorff distance
-5. **Batch processing**: Multi-patient automation
-
-### Integration Opportunities
-- PACS integration for clinical workflow
-- Tumor segmentation on registered images
-- Quantitative SUV correlation analysis
-- Longitudinal registration for treatment monitoring
-
----
-
-## References
-
-1. SimpleITK Framework: https://simpleitk.org
-2. Mattes Mutual Information: Mattes et al. (2003), "PET-CT Image Registration in the Chest"
-3. NIfTI Format: https://nifti.nimh.nih.gov
-4. Medical Image Registration: Zitová & Flusser (2003)
-
----
-
-## License
-
-Academic/Research Use
-
----
-
-## Contact
-
-For questions or contributions, refer to project documentation.
-
-
+This project is licensed under the MIT License - see the LICENSE file for details.

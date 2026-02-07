@@ -1,0 +1,5 @@
+{
+  "final_metric": -0.30622378811013606,
+  "iterations": 169,
+  "stop_condition": "GradientDescentOptimizerv4Template: Convergence checker passed at iteration 103."
+}
